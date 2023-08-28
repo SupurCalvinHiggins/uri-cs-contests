@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <table>
+        <thead>
+        <tr>
+            <td>Rank</td>
+            <td>Time</td>
+            <td>Entry</td>
+            <td>Author</td>
+            <td>Description</td>
+        </tr>
+        </thead>
+        {% for submission in submissions %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ submission.metric }}</td>
+            <td>{{ submission.name }}</td>
+            <td>{{ submission.author }}</td>
+            <td>{{ submission.desc }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <form method="post" enctype="multipart/form-data">
+        <label>
+            Author
+            <input type="text" name="author">
+        </label>
+        <label>
+            Email
+            <input type="email" name="email">
+        </label>
+        <label>
+            Name
+            <input type="text" name="name">
+        </label>
+        <label>
+            Description
+            <textarea name="desc"></textarea>
+        </label>
+        <input type="file" name="file">
+        <input type="submit" value="Upload">
+    </form>
+</body>
+</html>

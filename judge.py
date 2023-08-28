@@ -63,15 +63,10 @@ def time_and_test(args: list[str], expected_stdout: str) -> tuple[Status, int]:
 		return Status.TIMED_OUT, 0
 	end_time = time.perf_counter_ns()
 
-	if proc.stdout != expected_stdout:
+	if proc.stdout.strip() != expected_stdout:
 		return Status.FAILED, end_time - start_time
 
 	return Status.PASSED, end_time - start_time
-
-
-CONTEST_TO_JUDGE = {
-	Contest.WORDCOUNT: judge_wordcount,
-}
 
 
 def collect_submissions() -> list[Submission]:
@@ -81,6 +76,14 @@ def collect_submissions() -> list[Submission]:
 
 
 COLLECT_DELAY = 10
+CONTEST_TO_TESTCASES = {
+	Contest.WORDCOUNT: [
+		{
+			"args": ["data/wordcount/tiny.txt"],
+			"expected_stdout": "11",
+		},
+	]
+}
 
 
 def main() -> None:
@@ -89,7 +92,14 @@ def main() -> None:
 		for submission in submissions:
 			teardown()
 			setup(submission=submission)
-			metric = CONTEST_TO_JUDGE[submission.contest]()
+			total_metric = 0
+			for kwargs in CONTEST_TO_TESTCASES[submission.contest]:
+				status, metric = time_and_test(**kwargs)
+				total_metric += metric
+				if status != status.PASSED:
+					break
+			# TODO: Status is the correct status. Total metric is metric.
+
 			# TODO: Update submission with metric.
 
 

@@ -11,6 +11,7 @@ class Status(Enum):
     RUNNING = auto()
     PASSED = auto()
     FAILED = auto()
+    TIMED_OUT = auto()
 
 
 class Contest(Enum):

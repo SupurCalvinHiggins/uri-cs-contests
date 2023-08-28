@@ -2,7 +2,6 @@ import os
 import glob
 import time
 import subprocess
-from typing import Optional
 from database import engine, Contest, Status, SourceType, Submission
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -13,36 +12,61 @@ SOURCE_PATH = os.path.join(BUILD_PATH, "source")
 EXECUTABLE_PATH = os.path.join(BUILD_PATH, "prog")
 
 
-def setup(submission: Submission) -> None:
-	teardown()
+def setup(source: bytes, source_type: SourceType) -> None:
+	"""
+	Copy the source file to SOURCE_PATH and compile to EXECUTABLE_PATH. Assumes that the BUILD_PATH has been cleaned.
+
+	Parameters
+	----------
+	source: The bytes of the source file to compile.
+	source_type: The type of the source file to compile.
+
+	Returns
+	-------
+	None.
+	"""
 
 	with open(SOURCE_PATH, "w") as f:
-		f.write(submission.source)
+		f.write(source.decode())
 
-	if submission.source_type == SourceType.C:
-		subprocess.run(f"gcc {SOURCE_PATH} -O3 -std=c17 -o {EXECUTABLE_PATH}")
-	elif submission.source_type == SourceType.CPP:
-		subprocess.run(f"g++ {SOURCE_PATH} -O3 -std=c++20 -o {EXECUTABLE_PATH}")
+	source_type_to_cmd = {
+		SourceType.C: f"gcc {SOURCE_PATH} -O3 -std=c17 -o {EXECUTABLE_PATH}",
+		SourceType.CPP: f"g++ {SOURCE_PATH} -O3 -std=c++20 -o {EXECUTABLE_PATH}"
+	}
+	cmd = source_type_to_cmd[source_type]
+	subprocess.run(cmd)
 
 
 def teardown() -> None:
+	"""
+	Clean BUILD_PATH.
+
+	Returns
+	-------
+	None.
+	"""
 	os.makedirs(BUILD_PATH, exist_ok=True)
 	for f in glob.glob(os.path.join(BUILD_PATH, "*")):
 		os.remove(f)
 
 
-def judge_wordcount() -> Optional[int]:
+def time_and_test(args: list[str], expected_stdout: str) -> tuple[Status, int]:
 	start_time = time.perf_counter_ns()
 	try:
-		subprocess.run(
-			f"./{EXECUTABLE_PATH} data/wordcount/large.txt",
+		proc = subprocess.run(
+			[f"./{EXECUTABLE_PATH}", *args],
 			capture_output=True,
+			text=True,
 			timeout=5,
 		)
 	except subprocess.TimeoutExpired:
-		return None
+		return Status.TIMED_OUT, 0
 	end_time = time.perf_counter_ns()
-	return end_time - start_time
+
+	if proc.stdout != expected_stdout:
+		return Status.FAILED, end_time - start_time
+
+	return Status.PASSED, end_time - start_time
 
 
 CONTEST_TO_JUDGE = {
@@ -63,9 +87,9 @@ def main() -> None:
 	while True:
 		submissions = collect_submissions()
 		for submission in submissions:
+			teardown()
 			setup(submission=submission)
 			metric = CONTEST_TO_JUDGE[submission.contest]()
-			teardown()
 			# TODO: Update submission with metric.
 
 

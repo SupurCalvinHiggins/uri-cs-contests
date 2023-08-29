@@ -1,0 +1,108 @@
+.sidebar {
+  height: 100%;
+  width: 160px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* Style the sidebar content */
+.sidebar-content {
+  padding: 16px 0; /* Added padding for top and bottom */
+}
+.sidebar a {
+  padding: 40px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 20px;
+  color: #818181;
+  display: block;
+}
+
+.sidebar a:hover {
+  color: #f1f1f1;
+}
+
+.main {
+  margin-left: 160px;
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidebar {padding-top: 15px;}
+  .sidebar a {font-size: 18px; padding: 6px 8px 6px 16px;}
+}
+
+.footer {
+  margin-top: auto;
+  width: 100%;
+  background-color: transparent;
+  background: linear-gradient(grey, #437fc7);
+  color: white;
+  text-align: center;
+  padding: 8px 0;
+}
+
+/* Existing styles */
+
+/* New styles for the content section */
+.main {
+  padding: 40px;
+  background-color: #f5f5f5; /* Light grey background */
+  min-height: 100vh; /* Ensure content fills the entire viewport */
+  box-sizing: border-box; /* Include padding in height calculations */
+}
+
+/* New heading styles */
+.main h1 {
+  font-size: 32px;
+  margin-bottom: 20px;
+   margin-top: 23px;
+  color: #333;
+}
+
+.main h2 {
+  font-size: 28px;
+  margin-bottom: 15px;
+  margin-top: 20px;
+  color: #444;
+}
+
+.main p {
+  font-size: 20px;
+  line-height: 1.6;
+  color: #666;
+}
+
+/* New styles for emphasized text */
+.main strong {
+  color: #222;
+}
+
+/* New styles for the quote */
+.main blockquote {
+  border-left: 4px solid #0099cc; /* Blue border */
+  padding-left: 20px;
+  margin-left: 0;
+  font-size: 20px;
+  color: #333;
+  font-style: italic;
+}
+
+/* New styles for the link */
+.main a {
+  color: #0099cc;
+  text-decoration: underline;
+}
+
+@media screen and (max-width: 600px) {
+  .main {
+    margin-left: 0;
+    padding: 20px;
+  }
+}

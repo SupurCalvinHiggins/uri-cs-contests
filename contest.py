@@ -1,5 +1,5 @@
-from enum import Enum, auto
+from enum import Enum
 
 
 class Contest(Enum):
-    WORDCOUNT = auto()
+    WORDCOUNT = "WORDCOUNT"

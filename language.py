@@ -1,13 +1,13 @@
-from enum import Enum, auto
+from enum import Enum
 from pathlib import Path
 from typing import Iterable
 
 
 class Language(Enum):
-    C = auto()
-    CPP = auto()
-    RUST = auto()
-    UNKNOWN = auto()
+    C = "C"
+    CPP = "CPP"
+    RUST = "RUST"
+    UNKNOWN = "UNKNOWN"
 
 
 def detect_language(paths: Iterable[Path]) -> Language:

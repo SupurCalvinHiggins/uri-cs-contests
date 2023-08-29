@@ -13,91 +13,126 @@ DATABASE_PATH = "app.db"
 
 def db_create() -> None:
     con = sqlite3.connect(DATABASE_PATH)
-    with con as cur:
-        cur.execute(
-            """
-            CREATE TABLE submissions (
-                contest TEXT NOT NULL, 
-                author TEXT NOT NULL, 
-                email TEXT NOT NULL, 
-                name TEXT NOT NULL, 
-                description TEXT NOT NULL, 
-                status TEXT NOT NULL, 
-                metric INTEGER, 
-                language TEXT NOT NULL, 
-                zip_data BLOB NOT NULL
-            )
-            """
+    cur = con.cursor()
+    cur.execute(
+        """
+        CREATE TABLE submissions (
+            id INTEGER PRIMARY KEY,
+            contest TEXT NOT NULL, 
+            author TEXT NOT NULL, 
+            email TEXT NOT NULL, 
+            name TEXT NOT NULL, 
+            description TEXT NOT NULL, 
+            status TEXT NOT NULL, 
+            metric INTEGER, 
+            language TEXT NOT NULL, 
+            zip_data BLOB NOT NULL
         )
+        """
+    )
+    con.commit()
+    con.close()
 
 
 def db_insert_or_update(submission: Submission) -> None:
     con = sqlite3.connect(DATABASE_PATH)
+    cur = con.cursor()
     if submission.id is None:
-        with con as cur:
-            cur.execute(
-                """
-                INSERT INTO submissions VALUES (
-                    :contest,
-                    :author,
-                    :email,
-                    :name,
-                    :description,
-                    :status,
-                    :metric,
-                    :language,
-                    :zip_data
-                )
-                """,
-                (
-                    submission.contest.value,
-                    submission.author,
-                    submission.email,
-                    submission.name,
-                    submission.description,
-                    submission.status.value,
-                    submission.metric,
-                    submission.program.language.value,
-                    submission.program.zip_data,
-                )
+        cur.execute(
+            """
+            INSERT INTO submissions 
+            (contest, author, email, name, description, status, metric, language, zip_data) 
+            VALUES (
+                :contest,
+                :author,
+                :email,
+                :name,
+                :description,
+                :status,
+                :metric,
+                :language,
+                :zip_data
             )
+            """,
+            db_adapt_submission(submission)
+        )
     else:
         cur.execute(
             """
-            UPDATE submissions SET ()
+            UPDATE submissions 
+            SET 
+                contest = :contest,
+                author = :author,
+                email = :email,
+                name = :name,
+                description = :description,
+                status = :status,
+                metric = :metric,
+                language = :language,
+                zip_data = :zip_data 
+            WHERE 
+                id = :id
             """,
-            (
-                submission.id,
-                submission.contest,
-                submission.author,
-                submission.email,
-                submission.name,
-                submission.description,
-                submission.status,
-                submission.metric,
-                submission.program.language,
-                submission.program.zip_data,
-            )
+            db_adapt_submission(submission)
         )
-
     con.commit()
+    con.close()
 
 
 def db_iter() -> Iterable[Submission]:
-    return []
+    con = sqlite3.connect(DATABASE_PATH)
+    cur = con.cursor()
+    cur.execute("SELECT * FROM submissions")
+    rows = cur.fetchall()
+    con.close()
+    return [db_convert_submission(row) for row in rows]
+
+
+def db_adapt_submission(submission: Submission) -> dict:
+    return {
+        "id": submission.id,
+        "contest": submission.contest.value,
+        "author": submission.author,
+        "email": submission.email,
+        "name": submission.name,
+        "description": submission.description,
+        "status": submission.status.value,
+        "metric": submission.metric,
+        "language": submission.program.language.value,
+        "zip_data": submission.program.zip_data,
+    }
+
+
+def db_convert_submission(row: tuple) -> Submission:
+    return Submission(
+        id=row[0],
+        contest=Contest(row[1]),
+        author=row[2],
+        email=row[3],
+        name=row[4],
+        description=row[5],
+        status=Status(row[6]),
+        metric=row[7],
+        program=Program(language=Language(row[8]), zip_data=row[9]),
+    )
 
 
 if __name__ == "__main__":
-    # db_create()
-    submission = Submission(
-        id=None,
-        contest=Contest.WORDCOUNT,
-        author="calvin",
-        email="email",
-        name="name",
-        description="desc",
-        program=Program(language=Language.C, zip_data=b""),
-        status=Status.SUBMITTED,
-        metric=None,
-    )
-    db_insert_or_update(submission)
+    db_create()
+    # submission = Submission(
+    #     id=None,
+    #     contest=Contest.WORDCOUNT,
+    #     author="calvin",
+    #     email="email",
+    #     name="name",
+    #     description="desc",
+    #     program=Program(language=Language.C, zip_data=b""),
+    #     status=Status.SUBMITTED,
+    #     metric=None,
+    # )
+    # db_insert_or_update(submission)
+    # db_insert_or_update(submission)
+    # submission.id = 1
+    # submission.name = "new name"
+    # db_insert_or_update(submission)
+    # print(db_iter())

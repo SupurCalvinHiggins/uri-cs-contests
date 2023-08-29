@@ -1,9 +1,9 @@
-from enum import Enum, auto
+from enum import Enum
 
 
 class Status(Enum):
-    SUBMITTED = auto()
-    RUNNING = auto()
-    PASSED = auto()
-    FAILED = auto()
-    TIMED_OUT = auto()
+    SUBMITTED = "SUBMITTED"
+    RUNNING = "RUNNING"
+    PASSED = "PASSED"
+    FAILED = "FAILED"
+    TIMED_OUT = "TIMED_OUT"

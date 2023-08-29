@@ -17,7 +17,6 @@ class Program:
 
     language: Language
     zip_data: bytes
-    id: Optional[int] = None
 
     @staticmethod
     def from_zip_data(zip_data: bytes) -> Program:

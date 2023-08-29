@@ -26,12 +26,12 @@ def setup(source: bytes, source_type: SourceType) -> None:
 	None.
 	"""
 
-	with open(SOURCE_PATH, "w") as f:
+	with open(f"{SOURCE_PATH}.cpp", "w") as f:
 		f.write(source.decode())
 
 	source_type_to_cmd = {
-		SourceType.C: f"gcc {SOURCE_PATH} -O3 -std=c17 -o {EXECUTABLE_PATH}",
-		SourceType.CPP: f"g++ {SOURCE_PATH} -O3 -std=c++20 -o {EXECUTABLE_PATH}"
+		SourceType.C: f"gcc {SOURCE_PATH}.c -O3 -std=c17 -o {EXECUTABLE_PATH}",
+		SourceType.CPP: f"g++ {SOURCE_PATH}.cpp -O3 -std=c++20 -o {EXECUTABLE_PATH}"
 	}
 	cmd = source_type_to_cmd[source_type]
 	subprocess.run(cmd)
@@ -61,6 +61,8 @@ def time_and_test(args: list[str], expected_stdout: str) -> tuple[Status, int]:
 		)
 	except subprocess.TimeoutExpired:
 		return Status.TIMED_OUT, 0
+	except Exception:
+		return Status.FAILED, 0
 	end_time = time.perf_counter_ns()
 
 	if proc.stdout.strip() != expected_stdout:
@@ -91,17 +93,19 @@ def main() -> None:
 		submissions = collect_submissions()
 		for submission in submissions:
 			teardown()
-			setup(submission=submission)
+			setup(source=submission.source, source_type=submission.source_type)
 			total_metric = 0
+			status = Status.PASSED
 			for kwargs in CONTEST_TO_TESTCASES[submission.contest]:
 				status, metric = time_and_test(**kwargs)
 				total_metric += metric
 				if status != status.PASSED:
 					break
-			# TODO: Status is the correct status. Total metric is metric.
-
-			# TODO: Update submission with metric.
-
+			submission.status = status
+			submission.metric = total_metric
+			with Session(engine) as session:
+				session.add(submission)
+				session.commit()
 
 		time.sleep(COLLECT_DELAY)
 

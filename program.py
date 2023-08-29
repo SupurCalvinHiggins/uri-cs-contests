@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Optional
 
 
+# TODO: add hash: source_hash = hashlib.sha256(source).hexdigest()
+
 @dataclass
 class Program:
 

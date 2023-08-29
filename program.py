@@ -2,15 +2,36 @@ from __future__ import annotations
 
 
 import subprocess
+from enum import Enum
 from dataclasses import dataclass
-from language import Language, detect_language
 from io import BytesIO
 from zipfile import ZipFile
 from pathlib import Path
-from typing import Optional
+from typing import Iterable
 
 
 # TODO: add hash: source_hash = hashlib.sha256(source).hexdigest()
+
+class Language(Enum):
+    C = "C"
+    CPP = "CPP"
+    RUST = "RUST"
+    UNKNOWN = "UNKNOWN"
+
+
+def detect_language(paths: Iterable[Path]) -> Language:
+    main_to_language = {
+        "main.c": Language.C,
+        "main.cpp": Language.CPP,
+        "main.rs": Language.RUST,
+    }
+
+    for path in paths:
+        if path.name in main_to_language:
+            return main_to_language[path.name]
+
+    return Language.UNKNOWN
+
 
 @dataclass
 class Program:

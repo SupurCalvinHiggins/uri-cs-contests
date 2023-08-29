@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, redirect, url_for
+from pathlib import Path
 from submission import Submission
 from program import Program
 from contest import Contest
@@ -17,21 +18,18 @@ def index():
 @app.route("/wordcount", methods=["GET", "POST"])
 def wordcount():
     if request.method == "POST":
-        author = request.form["author"]
-        email = request.form["email"]
-        name = request.form["name"]
-        desc = request.form["desc"]
         file = request.files["file"]
+        if Path(file.filename).suffix != '.zip':
+            return "Submissions must be ZIP files."
         zip_data = file.read()
         submission = Submission(
             contest=Contest.WORDCOUNT,
-            author=author,
-            email=email,
-            name=name,
-            description=desc,
+            author=request.form["author"],
+            email=request.form["email"],
+            name=request.form["name"],
+            description=request.form["desc"],
             program=Program.from_zip_data(zip_data=zip_data),
             status=Status.SUBMITTED,
-            metric=None,
         )
         db_insert_or_update(submission)
         return redirect(url_for("wordcount_submission", source_hash="hash"))

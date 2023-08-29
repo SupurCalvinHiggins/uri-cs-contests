@@ -10,7 +10,6 @@ from status import Status
 
 @dataclass
 class Submission:
-    id: Optional[int]
     contest: Contest
     author: str
     email: str
@@ -18,4 +17,5 @@ class Submission:
     description: str
     program: Program
     status: Status
-    metric: Optional[int]
+    metric: Optional[int] = None
+    id: Optional[int] = None
